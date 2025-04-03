@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page Moderna</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/styles.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar">
+            <a href="#" class="logo">IA</a>
+            <ul class="nav-links">
+                <li><a href="#features">Características</a></li>
+                <li><a href="#about">Definición</a></li>
+                <li><a href="#testimonials">Funcionalidades</a></li>
+                <li><a href="#contact">Contacto</a></li>
+                <li><a class="cta-button" href="/index.html">Comenzar</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Proyecto Final IA</h1>
+            <p>¡Descubre cómo nuestra plataforma puede ayudarte a resumir textos, responder preguntas, generar preguntas y traducir texto!</p>
+            <div class="hero-buttons">
+                <a href="#features" class="button primary-button">Saber más</a>
+                <a class="button secondary-button" href="/index.html">Comenzar</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="section-title">
+            <h2>Características Principales</h2>
+            <p>Herramientas utilizadas para desarrollar este proyecto </p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h3>Backend</h3>
+                <p>Python</p>
+                <p>Flask</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Frontend</h3>
+                <p>HTML</p>
+                <p>CSS</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Versiones</h3>
+                <p>Github</p>
+                <p>Checa nuestro repositorio en la siguiente liga: <a href="https://github.com/DianaTrev20/Google.git">https://github.com/DianaTrev20/Google.git</a> </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="about-content">
+            <div class="about-text">
+                <h2>¿Qué es el modelo T5 de google?</h2>
+                <p>El modelo T5 (Text-To-Text Transfer Transformer) es un modelo de lenguaje desarrollado por Google Research en 2020. Es un framework revolucionario porque unifica todas las tareas de procesamiento de lenguaje natural (NLP) en un solo enfoque: texto a texto. Aquí te lo explico brevemente:</p>
+            </div>
+            <div class="about-image">
+                <img src="/static/resources/T5.jpeg">
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials">
+        <div class="section-title">
+            <h2>Funcionalidades impulsadas por T5</h2>
+            <p>Potenciamos tu productividad con el modelo de IA de Google especializado en tareas de texto</p>
+        </div>
+        <div class="testimonials-grid">
+            <!-- Tarjeta 1: Generación de preguntas -->
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check-circle"></i> Generación automática de cuestionarios</li>
+                        <li><i class="fas fa-check-circle"></i> Preguntas basadas en temas específicos</li>
+                        <li><i class="fas fa-check-circle"></i> Adaptable a diferentes niveles de complejidad</li>
+                    </ul>
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">
+                        <img src="/static/resources/question.png" alt="Generación de preguntas">
+                    </div>
+                    <div class="author-info">
+                        <h4>Generación inteligente de preguntas y responder preguntas</h4>
+                        <p>Modelo T5 | Google AI</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 2: Preguntas sobre temas -->
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check-circle"></i> Comprensión de contexto profunda</li>
+                        <li><i class="fas fa-check-circle"></i> Respuestas basadas en datos científicos</li>
+                        <li><i class="fas fa-check-circle"></i> Capacidad de síntesis de información</li>
+                    </ul>
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">
+                        <img src="/static/resources/resumen.png" alt="Búsqueda temática">
+                    </div>
+                    <div class="author-info">
+                        <h4>Resumen de texto</h4>
+                        <p>Modelo T5 | Google AI</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 3: Traducción -->
+            <div class="testimonial-card">
+                <div class="testimonial-content">
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check-circle"></i> Soporte para 100+ idiomas</li>
+                        <li><i class="fas fa-check-circle"></i> Conservación de tono y estilo</li>
+                        <li><i class="fas fa-check-circle"></i> Traducción de documentos largos</li>
+                    </ul>
+                </div>
+                <div class="testimonial-author">
+                    <div class="author-avatar">
+                        <img src="/static/resources/translate.jpeg" alt="Traducción">
+                    </div>
+                    <div class="author-info">
+                        <h4>Traducción contextual avanzada</h4>
+                        <p>Modelo T5 | Google AI</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <h2>¿Listo para comenzar?</h2>
+        <p>¡Prueba nuestro proyecto!</p>
+        <a class="button primary-button" href="/index.html">Comienzar</a>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3>IA</h3>
+                <p>Transformando tareas coditianas con el modelo T5 de Google</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>Enlaces rápidos</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Inicio</a></li>
+                    <li><a href="#features">Características</a></li>
+                    <li><a href="#about">Nosotros</a></li>
+                    <li><a href="#testimonials">Testimonios</a></li>
+                    <li><a href="#">Precios</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Productos</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Hacer preguntas</a></li>
+                    <li><a href="#">Responder preguntas</a></li>
+                    <li><a href="#">Resumir</a></li>
+                    <li><a href="#">Traducir</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Contacto</h3>
+                <ul class="footer-links">
+                    <li><i class="fas fa-map-marker-alt"></i> UBAM, Teoloyucan, Edo. Mex.</li>
+                    <li><i class="fas fa-phone"></i> +1 234 567 890</li>
+                    <li><i class="fas fa-envelope"></i> info@IA.com</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 IA. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herramientas de Texto</title>
+    <style>
+        :root {
+            --primary-color: #4a6bff;
+            --secondary-color: #6c5ce7;
+            --accent-color: #00cec9;
+            --dark-color: #2d3436;
+            --light-color: #f5f6fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--dark-color);
+        }
+        
+        .header {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            color: var(--dark-color);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .menu-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+        
+        .menu-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            height: 150px;
+        }
+        
+        .menu-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .menu-button i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-preguntar {
+            background: linear-gradient(135deg, var(--primary-color), #6a5acd);
+        }
+        
+        .btn-responder {
+            background: linear-gradient(135deg, var(--accent-color), #00b894);
+        }
+        
+        .btn-resumir {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+        }
+        
+        .btn-traducir {
+            background: linear-gradient(135deg, #fdcb6e, #e17055);
+        }
+        
+        @media (max-width: 768px) {
+            .menu-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Herramientas de Texto</h1>
+        <p>Selecciona la función que necesitas para trabajar con tus textos</p>
+    </div>
+    
+    <div class="menu-container">
+        <a href="{{ url_for('generar_pregunta') }}" class="menu-button btn-preguntar">
+            <i class="fas fa-question-circle"></i>
+            Hacer Preguntas
+        </a>
+        
+        <a href="{{ url_for('pregunta') }}" class="menu-button btn-responder">
+            <i class="fas fa-comment-dots"></i>
+            Responder Preguntas
+        </a>
+        
+        <a href="{{ url_for('resumen') }}" class="menu-button btn-resumir">
+            <i class="fas fa-file-contract"></i>
+            Resumir Texto
+        </a>
+        
+        <a href="{{ url_for('traducir_page') }}" class="menu-button btn-traducir">
+            <i class="fas fa-language"></i>
+            Traducir Texto
+        </a>
+    </div>
+</body>
+</html>
