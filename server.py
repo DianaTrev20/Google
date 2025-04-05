@@ -56,9 +56,9 @@ def landing_page():
 def index():
     return render_template("index.html")
 
-@servidor.route("/pregunta")
+@servidor.route("/hacer_pregunta")
 def pregunta():
-    return render_template("hacer_preguntas.html")
+    return render_template("hacer_pregunta.html")
 
 @servidor.route("/procesar_pregunta", methods=["POST"])
 def procesar_pregunta():

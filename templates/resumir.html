@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumidor de Texto</title>
+    <style>
+        :root {
+            --primary-color: #5e60ce;
+            --secondary-color: #6930c3;
+            --accent-color: #5390d9;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #4cc9f0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #dee2e6 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+            width: 90%;
+            max-width: 800px;
+            padding: 40px;
+            margin: 40px 0;
+        }
+        
+        h1 {
+            color: var(--secondary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2.4rem;
+            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .input-section, .output-section {
+            margin-bottom: 30px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 18px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 180px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            line-height: 1.6;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(83, 144, 217, 0.2);
+        }
+        
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            flex: 1;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--light-color);
+        }
+        
+        .output-container {
+            background-color: var(--light-color);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid var(--accent-color);
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        .output-placeholder {
+            color: #adb5bd;
+            font-style: italic;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .icon {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background-color 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .length-control {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .length-control label {
+            margin-right: 15px;
+            margin-bottom: 0;
+        }
+        
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 8px;
+            border-radius: 4px;
+            background: #e9ecef;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+            background: var(--secondary-color);
+            transform: scale(1.1);
+        }
+        
+        .length-value {
+            margin-left: 15px;
+            font-weight: 600;
+            color: var(--primary-color);
+            min-width: 30px;
+            text-align: center;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Resumidor de Texto</h1>
+        
+        <div class="input-section">
+            <label for="originalText">Texto a resumir:</label>
+            <textarea id="originalText" name="originalText" placeholder="Escribe o pega aquí el texto que deseas resumir..." required></textarea>
+            
+            <div class="length-control">
+                <label for="lengthSlider">Longitud del resumen:</label>
+                <input type="range" id="lengthSlider" class="slider" min="10" max="100" value="50">
+                <span id="lengthValue" class="length-value">50%</span>
+            </div>
+            
+            <div class="btn-container">
+                <button id="summarizeBtn" class="btn">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    &nbsp;Generar Resumen
+                </button>
+                <button id="clearBtn" class="btn btn-secondary">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    &nbsp;Limpiar
+                </button>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Procesando texto, por favor espera...</p>
+        </div>
+        
+        <div class="output-section">
+            <label for="summaryText">Resumen generado:</label>
+            <div class="output-container">
+                <button id="copySummaryBtn" class="copy-btn" title="Copiar resumen">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Copiar
+                </button>
+                <div id="summaryText">
+                    <p class="output-placeholder">El resumen aparecerá aquí...</p>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span id="originalCount">0</span> palabras originales
+                </div>
+                <div class="stat-item">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span id="summaryCount">0</span> palabras en resumen
+                </div>
+                <div class="stat-item">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    <span id="reductionPercent">0</span>% reducción
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Control deslizante de longitud
+        const lengthSlider = document.getElementById('lengthSlider');
+        const lengthValue = document.getElementById('lengthValue');
+        
+        lengthSlider.addEventListener('input', function() {
+            lengthValue.textContent = this.value + '%';
+        });
+        
+        // Contador de palabras
+        const originalText = document.getElementById('originalText');
+        const originalCount = document.getElementById('originalCount');
+        const summaryCount = document.getElementById('summaryCount');
+        const reductionPercent = document.getElementById('reductionPercent');
+        
+        originalText.addEventListener('input', function() {
+            const wordCount = countWords(this.value);
+            originalCount.textContent = wordCount;
+            updateStats(wordCount, parseInt(summaryCount.textContent));
+        });
+        
+        function countWords(text) {
+            return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+        }
+        
+        function updateStats(original, summary) {
+            if (original === 0) {
+                reductionPercent.textContent = '0';
+            } else {
+                const reduction = Math.round(((original - summary) / original) * 100);
+                reductionPercent.textContent = reduction > 0 ? reduction : '0';
+            }
+        }
+        
+        // Botón de resumir
+        document.getElementById('summarizeBtn').addEventListener('click', function() {
+            const text = originalText.value.trim();
+            const length = parseInt(lengthSlider.value) / 100;
+            
+            if (!text) {
+                alert('Por favor ingresa un texto para resumir');
+                return;
+            }
+            
+            // Mostrar loading
+            document.getElementById('loading').style.display = 'block';
+            document.querySelector('.output-placeholder').style.display = 'none';
+            
+            // Simular generación de resumen (en un caso real, aquí harías una llamada a tu API)
+            setTimeout(() => {
+                generateSummary(text, length);
+                document.getElementById('loading').style.display = 'none';
+            }, 1500);
+        });
+        
+        function generateSummary(text, lengthRatio) {
+            // En una implementación real, esto vendría de tu backend/API
+            // Aquí simulamos un resumen generado
+            
+            // Simulación: Tomar aproximadamente el porcentaje solicitado del texto
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            const sentencesToKeep = Math.max(1, Math.floor(sentences.length * lengthRatio));
+            const summarySentences = sentences.slice(0, sentencesToKeep);
+            
+            let summary = summarySentences.join('. ') + (summarySentences.length > 0 ? '.' : '');
+            
+            // Si el texto no tiene puntos, simplemente tomar una parte del texto
+            if (summarySentences.length === 0) {
+                const words = text.split(/\s+/);
+                const wordsToKeep = Math.max(1, Math.floor(words.length * lengthRatio));
+                summary = words.slice(0, wordsToKeep).join(' ');
+            }
+            
+            const summaryElement = document.getElementById('summaryText');
+            summaryElement.innerHTML = `<p>${summary}</p>`;
+            
+            // Actualizar estadísticas
+            const originalWords = countWords(text);
+            const summaryWords = countWords(summary);
+            summaryCount.textContent = summaryWords;
+            updateStats(originalWords, summaryWords);
+        }
+        
+        // Botón de limpiar
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            originalText.value = '';
+            document.getElementById('summaryText').innerHTML = '<p class="output-placeholder">El resumen aparecerá aquí...</p>';
+            originalCount.textContent = '0';
+            summaryCount.textContent = '0';
+            reductionPercent.textContent = '0';
+        });
+        
+        // Botón de copiar
+        document.getElementById('copySummaryBtn').addEventListener('click', function() {
+            const summaryText = document.getElementById('summaryText').textContent.trim();
+            
+            if (!summaryText || summaryText === 'El resumen aparecerá aquí...') {
+                alert('No hay resumen para copiar');
+                return;
+            }
+            
+            navigator.clipboard.writeText(summaryText)
+                .then(() => {
+                    const originalText = this.textContent;
+                    this.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6L9 17l-5-5"/>
+                        </svg>
+                        ¡Copiado!
+                    `;
+                    setTimeout(() => {
+                        this.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copiar
+                        `;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Error al copiar: ', err);
+                    alert('No se pudo copiar el resumen');
+                });
+        });
+    </script>
+</body>
+</html>
