@@ -245,36 +245,19 @@
         <div class="language-controls">
             <div class="language-selector">
                 <label for="sourceLang">Idioma de origen:</label>
-                <select id="sourceLang">
-                    <option value="auto">Detectar idioma</option>
-                    <option value="es">Español</option>
-                    <option value="en">Inglés</option>
-                    <option value="fr">Francés</option>
-                    <option value="de">Alemán</option>
-                    <option value="it">Italiano</option>
-                    <option value="pt">Portugués</option>
-                    <option value="ja">Japonés</option>
-                    <option value="zh">Chino</option>
-                    <option value="ru">Ruso</option>
+                <select id="sourceLang" disabled>
+                    <option value="english" selected>Inglés</option>
                 </select>
             </div>
             
-            <button class="swap-btn" id="swapBtn" title="Intercambiar idiomas">
+            <button class="swap-btn" id="swapBtn" title="Intercambiar idiomas" disabled>
                 <i class="fas fa-exchange-alt"></i>
             </button>
             
             <div class="language-selector">
                 <label for="targetLang">Idioma de destino:</label>
-                <select id="targetLang">
-                    <option value="es">Español</option>
-                    <option value="en" selected>Inglés</option>
-                    <option value="fr">Francés</option>
-                    <option value="de">Alemán</option>
-                    <option value="it">Italiano</option>
-                    <option value="pt">Portugués</option>
-                    <option value="ja">Japonés</option>
-                    <option value="zh">Chino</option>
-                    <option value="ru">Ruso</option>
+                <select id="targetLang" disabled>
+                    <option value="french" selected>Francés</option>
                 </select>
             </div>
         </div>
@@ -335,76 +318,65 @@
         });
         
         // Intercambiar idiomas
-        document.getElementById('swapBtn').addEventListener('click', function() {
-            const sourceLang = document.getElementById('sourceLang');
-            const targetLang = document.getElementById('targetLang');
-            const sourceValue = sourceLang.value;
-            
-            // No permitir intercambiar si el origen es "auto"
-            if (sourceValue !== 'auto') {
-                sourceLang.value = targetLang.value;
-                targetLang.value = sourceValue;
-                
-                // También intercambiar textos si hay contenido
-                if (sourceText.value || targetText.value) {
-                    const tempText = sourceText.value;
-                    sourceText.value = targetText.value;
-                    targetText.value = tempText;
-                    
-                    // Actualizar contadores
-                    sourceCharCount.textContent = sourceText.value.length;
-                    targetCharCount.textContent = targetText.value.length;
-                }
-            }
-        });
+        document.getElementById('swapBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        alert('Esta aplicación solo traduce de inglés a francés');
+    });
         
         // Botón de traducir
         document.getElementById('translateBtn').addEventListener('click', function() {
-            const text = sourceText.value.trim();
-            const sourceLang = document.getElementById('sourceLang').value;
-            const targetLang = document.getElementById('targetLang').value;
-            
-            if (!text) {
-                alert('Por favor ingresa un texto para traducir');
-                return;
-            }
-            
-            if (text.length > 5000) {
-                alert('El texto no puede exceder los 5000 caracteres');
-                return;
-            }
-            
-            if (sourceLang === targetLang) {
-                alert('Los idiomas de origen y destino no pueden ser iguales');
-                return;
-            }
-            
-            // Mostrar loading
-            document.getElementById('loading').style.display = 'block';
-            
-            // Simular traducción (en un caso real, aquí harías una llamada a tu API)
-            setTimeout(() => {
-                translateText(text, sourceLang, targetLang);
-                document.getElementById('loading').style.display = 'none';
-            }, 1500);
-        });
+        const text = sourceText.value.trim();
         
-        function translateText(text, sourceLang, targetLang) {
-            // En una implementación real, esto vendría de tu backend/API
-            // Aquí simulamos una traducción
-            
-            // Simplemente invertimos el texto como ejemplo
-            let translatedText = "Texto traducido (" + targetLang + "): " + text.split('').reverse().join('');
-            
-            // Si el idioma de origen era "auto", mostramos un mensaje diferente
-            if (sourceLang === 'auto') {
-                translatedText = "Texto traducido (idioma detectado → " + targetLang + "): " + text;
-            }
-            
-            document.getElementById('targetText').value = translatedText;
-            targetCharCount.textContent = translatedText.length;
+        if (!text) {
+            alert('Por favor ingresa un texto para traducir');
+            return;
         }
         
+        if (text.length > 5000) {
+            alert('El texto no puede exceder los 5000 caracteres');
+            return;
+        }
+        
+        // Mostrar loading
+        document.getElementById('loading').style.display = 'block';
+        
+        // Llamar a la función de traducción simplificada
+        translateText(text);
+    });
+
+
+        // Reemplaza la función translateText con esta versión real
+        function translateText(text) {
+        fetch('/traducir', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                texto: text
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                document.getElementById('targetText').value = '';
+            } else {
+                document.getElementById('targetText').value = data.traduccion;
+                document.getElementById('targetCharCount').textContent = data.caracteres;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al conectar con el servidor de traducción');
+        })
+        .finally(() => {
+            document.getElementById('loading').style.display = 'none';
+        });
+    }
+
+
+
         // Botón de limpiar
         document.getElementById('clearBtn').addEventListener('click', function() {
             sourceText.value = '';
