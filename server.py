@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template, jsonify
 from flask_cors import CORS
-from transformers import T5Tokenizer, T5ForConditionalGeneration
+from transformers import T5Tokenizer, T5ForConditionalGeneration, GPT2Tokenizer, GPT2LMHeadModel
 import torch
 import os
 
@@ -11,6 +11,9 @@ CORS(servidor)  # Habilita CORS
 # Cargar modelo y tokenizer
 MODEL_NAME = "t5-large"
 tokenizer = T5Tokenizer.from_pretrained(MODEL_NAME)
+
+gpt2_tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
+gpt2_model = GPT2LMHeadModel.from_pretrained("gpt2-medium")
 
 # Configurar dispositivo (GPU si está disponible)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -115,28 +118,75 @@ def procesar_pregunta():
         contexto = data.get("contexto", "").strip()
         
         if not pregunta:
-            return jsonify({"error": "Se requiere una pregunta"}), 400
+            return jsonify({"error": "Question is required"}), 400
 
-        # Mejor formato para respuestas (no solo preguntas)
+        # Improved prompt engineering
         if contexto:
-            input_text = f"respond to '{pregunta}' using this context: {contexto}"
+            input_text = f"Question: {pregunta}\nContext: {contexto}\nProvide a detailed, structured answer:"
         else:
-            input_text = f"answer this question: {pregunta}"
+            input_text = f"Answer this question in detail: {pregunta}"
         
-        input_ids = tokenizer.encode(input_text, return_tensors="pt", max_length=512, truncation=True)
+        inputs = tokenizer.encode(input_text, return_tensors="pt", max_length=512, truncation=True).to(device)
         
+        # Improved generation parameters
         outputs = model.generate(
-            input_ids,
-            max_length=200,
+            inputs,
+            max_length=512,
             num_beams=5,
+            no_repeat_ngram_size=3,
             early_stopping=True,
-            temperature=0.7  # Añadido para más variedad
+            temperature=0.7,
+            top_k=50,
+            top_p=0.95,
+            do_sample=True
         )
         
         respuesta = tokenizer.decode(outputs[0], skip_special_tokens=True)
         
-        # Limpiar respuesta (opcional)
+        # Post-processing to clean the output
         respuesta = respuesta.replace(pregunta, "").strip()
+        respuesta = respuesta.split("Answer:")[-1].strip()  # Remove any remaining prompt fragments
+        return jsonify({"respuesta": respuesta})
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# Endpoint específico para preguntas con GPT-2
+@servidor.route("/procesar_pregunta_gpt2", methods=["POST"])
+def procesar_pregunta_gpt2():
+    try:
+        data = request.get_json()
+        pregunta = data.get("pregunta", "").strip()
+        contexto = data.get("contexto", "").strip()
+        
+        if not pregunta:
+            return jsonify({"error": "Se requiere una pregunta"}), 400
+
+        # Construir el prompt para GPT-2
+        prompt = f"Pregunta: {pregunta}\n"
+        if contexto:
+            prompt += f"Contexto: {contexto}\n"
+        prompt += "Respuesta detallada:"
+        
+        inputs = gpt2_tokenizer.encode(prompt, return_tensors="pt", max_length=512, truncation=True).to(device)
+        
+        outputs = gpt2_model.generate(
+            inputs,
+            max_length=600,
+            num_beams=5,
+            no_repeat_ngram_size=3,
+            early_stopping=True,
+            temperature=0.7,
+            top_k=50,
+            top_p=0.95,
+            do_sample=True
+        )
+        
+        respuesta = gpt2_tokenizer.decode(outputs[0], skip_special_tokens=True)
+        
+        # Limpiar la respuesta eliminando el prompt
+        respuesta = respuesta.replace(prompt, "").strip()
         return jsonify({"respuesta": respuesta})
     
     except Exception as e:

@@ -3,8 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Preguntas</title>
+    <title>Formulario de Preguntas Inteligentes</title>
     <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --accent-color: #3a0ca3;
+            --light-color: #f8f9fa;
+            --dark-color: #2c3e50;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f7fa;
@@ -14,7 +24,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: #333;
+            color: var(--dark-color);
         }
         
         .container {
@@ -27,12 +37,8 @@
             transition: transform 0.3s ease;
         }
         
-        .container:hover {
-            transform: translateY(-5px);
-        }
-        
         h1 {
-            color: #2c3e50;
+            color: var(--dark-color);
             text-align: center;
             margin-bottom: 30px;
             font-weight: 600;
@@ -46,7 +52,7 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: #2c3e50;
+            color: var(--dark-color);
         }
         
         textarea {
@@ -56,18 +62,19 @@
             border-radius: 8px;
             font-size: 16px;
             resize: vertical;
-            min-height: 150px;
-            transition: border 0.3s ease;
+            min-height: 120px;
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
         
         textarea:focus {
             outline: none;
-            border-color: #3498db;
+            border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
         }
         
         .btn {
-            background-color: #3498db;
+            background-color: var(--primary-color);
             color: white;
             border: none;
             padding: 14px 28px;
@@ -77,18 +84,22 @@
             width: 100%;
             font-weight: 600;
             transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         .btn:hover {
-            background-color: #2980b9;
+            background-color: var(--secondary-color);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         
-        .btn:active {
-            transform: translateY(0);
+        .btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
         }
         
         .character-count {
@@ -97,51 +108,314 @@
             color: #7f8c8d;
             margin-top: 5px;
         }
+        
+        .character-count.warning {
+            color: var(--error-color);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .response-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: var(--light-color);
+            display: none;
+        }
+        
+        .response-title {
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .response-content {
+            line-height: 1.6;
+        }
+        
+        .error-message {
+            color: var(--error-color);
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .context-option {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>Formulario de Preguntas</h1>
+        <h1><i class="fas fa-question-circle"></i> Pregunta al Sistema</h1>
+        
         <form id="questionForm">
             <div class="form-group">
                 <label for="question">Escribe tu pregunta:</label>
-                <textarea id="question" name="question" placeholder="¿Qué te gustaría saber?" required></textarea>
-                <div class="character-count"><span id="charCount">0</span>/500</div>
+                <textarea id="question" name="question" placeholder="Ej: ¿Cómo funciona el aprendizaje automático?" required></textarea>
+                <div class="character-count"><span id="charCount">0</span>/500 caracteres</div>
             </div>
-            <button type="submit" class="btn">Enviar Pregunta</button>
+            
+            <div class="form-group">
+                <label for="context">Contexto adicional (opcional):</label>
+                <textarea id="context" name="context" placeholder="Proporciona información adicional que ayude a responder mejor tu pregunta"></textarea>
+            </div>
+            
+            <button type="submit" class="btn" id="submitBtn">
+                <i class="fas fa-paper-plane"></i> Enviar Pregunta
+            </button>
         </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Procesando tu pregunta...</p>
+        </div>
+        
+        <div class="error-message" id="errorContainer"></div>
+        
+        <div class="response-container" id="responseContainer">
+            <h3 class="response-title">
+                <i class="fas fa-robot"></i> Respuesta:
+            </h3>
+            <div class="response-content" id="responseContent"></div>
+        </div>
     </div>
 
     <script>
-        // Contador de caracteres
-        const textarea = document.getElementById('question');
+        // Elementos del DOM
+        const questionForm = document.getElementById('questionForm');
+        const questionInput = document.getElementById('question');
+        const contextInput = document.getElementById('context');
         const charCount = document.getElementById('charCount');
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingIndicator = document.getElementById('loading');
+        const errorContainer = document.getElementById('errorContainer');
+        const responseContainer = document.getElementById('responseContainer');
+        const responseContent = document.getElementById('responseContent');
         
-        textarea.addEventListener('input', function() {
+        // Contador de caracteres
+        questionInput.addEventListener('input', function() {
             const currentLength = this.value.length;
             charCount.textContent = currentLength;
             
             if (currentLength > 500) {
-                charCount.style.color = '#e74c3c';
+                charCount.classList.add('warning');
+                submitBtn.disabled = true;
             } else {
-                charCount.style.color = '#7f8c8d';
+                charCount.classList.remove('warning');
+                submitBtn.disabled = false;
             }
         });
         
-        // Manejo del formulario
-        document.getElementById('questionForm').addEventListener('submit', function(e) {
+        // Manejo del envío del formulario con GPT-2
+        questionForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const question = document.getElementById('question').value;
             
-            if (question.length > 500) {
-                alert('La pregunta no puede exceder los 500 caracteres');
+            const question = questionInput.value.trim();
+            const context = contextInput.value.trim();
+            
+            // Validaciones
+            if (!question) {
+                showError('Por favor escribe una pregunta');
                 return;
             }
             
-            // Aquí puedes agregar la lógica para enviar la pregunta
-            alert('Pregunta enviada: ' + question);
-            // document.getElementById('question').value = ''; // Limpiar el campo después de enviar
+            if (question.length > 500) {
+                showError('La pregunta no puede exceder los 500 caracteres');
+                return;
+            }
+            
+            // Configurar UI para carga
+            loadingIndicator.style.display = 'block';
+            errorContainer.style.display = 'none';
+            responseContainer.style.display = 'none';
+            submitBtn.disabled = true;
+            
+            try {
+                // Enviar la petición al endpoint de GPT-2
+                const response = await fetch('/procesar_pregunta_gpt2', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        pregunta: question,
+                        contexto: context
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Error en el servidor');
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Limpiar y mostrar la respuesta
+                const cleanedResponse = cleanGPT2Response(data.respuesta, question);
+                showResponse(cleanedResponse);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message || 'Error al procesar tu pregunta');
+                
+                // Fallback a T5-Large si GPT-2 falla
+                await tryFallbackT5(question, context);
+                
+            } finally {
+                loadingIndicator.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Función de fallback a T5-Large
+        async function tryFallbackT5(question, context) {
+            try {
+                const response = await fetch('/procesar_pregunta', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        pregunta: question,
+                        contexto: context
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (!data.error) {
+                        const cleanedResponse = cleanT5Response(data.respuesta);
+                        showResponse("[T5-Large] " + cleanedResponse);
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.error('Fallback también falló:', e);
+            }
+            return false;
+        }
+        
+        // Función para limpiar respuestas de GPT-2
+        function cleanGPT2Response(responseText, originalQuestion) {
+            // Eliminar el prompt y artefactos
+            let cleaned = responseText
+                .replace(new RegExp(originalQuestion, 'gi'), '')
+                .replace(/Pregunta:.*?\n/gi, '')
+                .replace(/Contexto:.*?\n/gi, '')
+                .replace(/Respuesta detallada:/gi, '')
+                .replace(/"+/g, '')
+                .replace(/#+/g, '')
+                .replace(/\*\*/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+            
+            // Eliminar texto después de signos de cierre
+            const endChars = ['.', '?', '!'];
+            let lastIndex = -1;
+            endChars.forEach(char => {
+                const idx = cleaned.lastIndexOf(char);
+                if (idx > lastIndex) lastIndex = idx;
+            });
+            
+            if (lastIndex > 0) {
+                cleaned = cleaned.substring(0, lastIndex + 1);
+            }
+            
+            // Capitalizar primera letra
+            if (cleaned.length > 0) {
+                cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+            }
+            
+            return cleaned;
+        }
+        
+        // Función para limpiar respuestas de T5 (si se usa el fallback)
+        function cleanT5Response(responseText) {
+            return responseText
+                .replace(/<pad>/g, '')
+                .replace(/<\/s>/g, '')
+                .replace(/\?+/g, '?')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+        
+        // Función para mostrar la respuesta
+        function showResponse(responseText) {
+            responseContent.innerHTML = formatResponseText(responseText);
+            responseContainer.style.display = 'block';
+            responseContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Formatear texto con saltos de línea
+        function formatResponseText(text) {
+            // Convertir listas no numeradas
+            text = text.replace(/\n-/g, '<br>-');
+            
+            // Convertir listas numeradas
+            text = text.replace(/\n\d+\./g, '<br>$&');
+            
+            // Mantener saltos de línea existentes
+            return text.replace(/\n/g, '<br>');
+        }
+        
+        // Función para mostrar errores
+        function showError(message) {
+            errorContainer.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i> ${message}
+                <button onclick="this.parentElement.style.display='none'" 
+                        style="background:none; border:none; color:inherit; margin-left:10px; cursor:pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            errorContainer.style.display = 'block';
+            
+            setTimeout(() => {
+                if (errorContainer.style.display !== 'none') {
+                    errorContainer.style.display = 'none';
+                }
+            }, 5000);
+        }
+        
+        // Cerrar mensajes de error al hacer clic
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('fa-times')) {
+                e.target.closest('.error-message').style.display = 'none';
+            }
         });
     </script>
+
 </body>
 </html>
