@@ -200,7 +200,6 @@
     </div>
 
     <script>
-        // Modifica el event listener para manejar mejor los errores
         document.getElementById('generateBtn').addEventListener('click', async function () {
             const paragraph = document.getElementById('paragraph').value.trim();
             const loadingElement = document.getElementById('loading');
@@ -228,7 +227,7 @@
                     },
                     body: JSON.stringify({
                         text: paragraph,
-                        language: 'es'  // Puedes añadir soporte para idioma
+                        language: 'es'  
                     })
                 });
 
