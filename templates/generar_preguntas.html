@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Preguntas</title>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--dark-color);
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+            padding: 40px;
+            margin: 40px 0;
+        }
+
+        h1 {
+            color: var(--secondary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 2.2rem;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 150px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.2);
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .results h2 {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            font-weight: 500;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        .question-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .question-item {
+            background-color: var(--light-color);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            transition: transform 0.2s ease;
+        }
+
+        .question-item:hover {
+            transform: translateX(5px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .copy-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .error-message {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .similarity-control {
+            margin-top: 20px;
+        }
+        
+        .similarity-control label {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .similarity-control input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Generador de Preguntas</h1>
+
+        <div class="input-section">
+            <label for="paragraph">Ingresa tu párrafo de texto:</label>
+            <textarea id="paragraph" name="paragraph" placeholder="Pega o escribe tu texto aquí para generar preguntas..." required></textarea>
+            
+            <div class="similarity-control">
+                <label for="similarityThreshold">Umbral de similitud (0-100):</label>
+                <input type="number" id="similarityThreshold" min="0" max="100" value="70">
+                <small>Valores más altos evitan preguntas más similares</small>
+            </div>
+            
+            <button id="generateBtn" class="btn">Generar Preguntas</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Generando preguntas...</p>
+        </div>
+
+        <div id="errorContainer" class="error-message" style="display: none;"></div>
+
+        <div class="results" id="results">
+            <div class="controls">
+                <h2>Preguntas Generadas:</h2>
+                <div>
+                    <button class="copy-btn" id="copyBtn">Copiar Todas</button>
+                    <button class="copy-btn" id="clearBtn">Limpiar</button>
+                </div>
+            </div>
+            <ol class="question-list" id="questionList"></ol>
+        </div>
+    </div>
+
+    <script>
+        // Almacenamiento de preguntas generadas
+        let generatedQuestions = [];
+        
+        // Función para calcular similitud entre strings 
+        function calculateSimilarity(str1, str2) {
+            // Convertir a minúsculas y eliminar signos de puntuación
+            const cleanStr1 = str1.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()¿?¡]/g, '');
+            const cleanStr2 = str2.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()¿?¡]/g, '');
+            
+            // Dividir en palabras
+            const words1 = cleanStr1.split(/\s+/);
+            const words2 = cleanStr2.split(/\s+/);
+            
+            const commonWords = words1.filter(word => words2.includes(word));
+            
+            const maxLength = Math.max(words1.length, words2.length);
+            return (commonWords.length / maxLength) * 100;
+        }
+        
+        function filterSimilarQuestions(newQuestions, threshold) {
+            const uniqueQuestions = [];
+            
+            newQuestions.forEach(newQuestion => {
+                let isUnique = true;
+                
+                for (const existingQuestion of generatedQuestions) {
+                    const similarity = calculateSimilarity(newQuestion, existingQuestion);
+                    if (similarity > threshold) {
+                        isUnique = false;
+                        break;
+                    }
+                }
+                
+                // Comparacion con preguntas nuevas ya aceptadas para no repetir
+                for (const uniqueQuestion of uniqueQuestions) {
+                    const similarity = calculateSimilarity(newQuestion, uniqueQuestion);
+                    if (similarity > threshold) {
+                        isUnique = false;
+                        break;
+                    }
+                }
+                
+                if (isUnique) {
+                    uniqueQuestions.push(newQuestion);
+                }
+            });
+            
+            return uniqueQuestions;
+        }
+
+        document.getElementById('generateBtn').addEventListener('click', async function () {
+            const paragraph = document.getElementById('paragraph').value.trim();
+            const loadingElement = document.getElementById('loading');
+            const resultsElement = document.getElementById('results');
+            const errorElement = document.getElementById('errorContainer');
+            const generateBtn = document.getElementById('generateBtn');
+            const threshold = parseInt(document.getElementById('similarityThreshold').value);
+
+            if (!paragraph) {
+                showError('Por favor, ingresa algún texto para generar preguntas');
+                return;
+            }
+
+            if (threshold < 0 || threshold > 100 || isNaN(threshold)) {
+                showError('El umbral de similitud debe estar entre 0 y 100');
+                return;
+            }
+
+            // Reset UI
+            errorElement.style.display = 'none';
+            loadingElement.style.display = 'block';
+            generateBtn.disabled = true;
+
+            try {
+                const response = await fetch('/generate_questions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: paragraph })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error en el servidor');
+                }
+
+                const data = await response.json();
+
+                if (!data.questions || data.questions.length === 0) {
+                    throw new Error('No se generaron preguntas válidas');
+                }
+                
+                // Filtrar preguntas similares
+                const uniqueQuestions = filterSimilarQuestions(data.questions, threshold);
+                
+                if (uniqueQuestions.length === 0) {
+                    showError('No se encontraron preguntas nuevas que superen el umbral de similitud');
+                    return;
+                }
+                
+                // Agregar a las preguntas generadas
+                generatedQuestions.push(...uniqueQuestions);
+                
+                displayQuestions(uniqueQuestions);
+
+            } catch (error) {
+                showError(error.message);
+                console.error('Error:', error);
+            } finally {
+                loadingElement.style.display = 'none';
+                generateBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('copyBtn').addEventListener('click', function() {
+            const questions = Array.from(document.querySelectorAll('.question-item'))
+                                .map(item => item.textContent)
+                                .join('\n');
+            
+            navigator.clipboard.writeText(questions)
+                .then(() => alert('Preguntas copiadas al portapapeles'))
+                .catch(err => console.error('Error al copiar:', err));
+        });
+    
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            generatedQuestions = [];
+            document.getElementById('questionList').innerHTML = '';
+            document.getElementById('results').style.display = 'none';
+        });
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorContainer');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function displayQuestions(questions) {
+            const resultsElement = document.getElementById('results');
+            const questionList = document.getElementById('questionList');
+            
+            questions.forEach((question) => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('question-item');
+                listItem.textContent = question;
+                questionList.appendChild(listItem);
+            });
+
+            resultsElement.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

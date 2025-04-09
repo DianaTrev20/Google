@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Preguntas</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            padding: 30px;
+            transition: transform 0.3s ease;
+        }
+        
+        .container:hover {
+            transform: translateY(-5px);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 150px;
+            transition: border 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .character-count {
+            text-align: right;
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Formulario de Preguntas</h1>
+        <form id="questionForm">
+            <div class="form-group">
+                <label for="question">Escribe tu pregunta:</label>
+                <textarea id="question" name="question" placeholder="¿Qué te gustaría saber?" required></textarea>
+                <div class="character-count"><span id="charCount">0</span>/500</div>
+            </div>
+            <button type="submit" class="btn">Enviar Pregunta</button>
+        </form>
+    </div>
+
+    <script>
+        // Contador de caracteres
+        const textarea = document.getElementById('question');
+        const charCount = document.getElementById('charCount');
+        
+        textarea.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            charCount.textContent = currentLength;
+            
+            if (currentLength > 500) {
+                charCount.style.color = '#e74c3c';
+            } else {
+                charCount.style.color = '#7f8c8d';
+            }
+        });
+        
+        // Manejo del formulario
+        document.getElementById('questionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const question = document.getElementById('question').value;
+            
+            if (question.length > 500) {
+                alert('La pregunta no puede exceder los 500 caracteres');
+                return;
+            }
+            
+            // Aquí puedes agregar la lógica para enviar la pregunta
+            alert('Pregunta enviada: ' + question);
+            // document.getElementById('question').value = ''; // Limpiar el campo después de enviar
+        });
+    </script>
+</body>
+</html>
