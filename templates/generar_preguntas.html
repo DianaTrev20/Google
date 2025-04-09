@@ -96,8 +96,10 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .btn:active {
-            transform: translateY(0);
+        .btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .results {
@@ -172,6 +174,35 @@
         .copy-btn:hover {
             background-color: var(--secondary-color);
         }
+
+        .error-message {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .similarity-control {
+            margin-top: 20px;
+        }
+        
+        .similarity-control label {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .similarity-control input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
@@ -181,10 +212,16 @@
         <h1>Generador de Preguntas</h1>
 
         <div class="input-section">
-            <label for="paragraph">Ingresa el párrafo o texto:</label>
-            <textarea id="paragraph" name="paragraph"
-                placeholder="Escribe o pega aquí el texto del cual quieres generar preguntas..." required></textarea>
-            <button id="generateBtn" class="btn">Generar 10 Preguntas</button>
+            <label for="paragraph">Ingresa tu párrafo de texto:</label>
+            <textarea id="paragraph" name="paragraph" placeholder="Pega o escribe tu texto aquí para generar preguntas..." required></textarea>
+            
+            <div class="similarity-control">
+                <label for="similarityThreshold">Umbral de similitud (0-100):</label>
+                <input type="number" id="similarityThreshold" min="0" max="100" value="70">
+                <small>Valores más altos evitan preguntas más similares</small>
+            </div>
+            
+            <button id="generateBtn" class="btn">Generar Preguntas</button>
         </div>
 
         <div class="loading" id="loading">
@@ -192,32 +229,93 @@
             <p>Generando preguntas...</p>
         </div>
 
+        <div id="errorContainer" class="error-message" style="display: none;"></div>
+
         <div class="results" id="results">
-            <h2>Preguntas generadas:</h2>
+            <div class="controls">
+                <h2>Preguntas Generadas:</h2>
+                <div>
+                    <button class="copy-btn" id="copyBtn">Copiar Todas</button>
+                    <button class="copy-btn" id="clearBtn">Limpiar</button>
+                </div>
+            </div>
             <ol class="question-list" id="questionList"></ol>
-            <button class="copy-btn" id="copyBtn">Copiar todas las preguntas</button>
         </div>
     </div>
 
     <script>
+        // Almacenamiento de preguntas generadas
+        let generatedQuestions = [];
+        
+        // Función para calcular similitud entre strings 
+        function calculateSimilarity(str1, str2) {
+            // Convertir a minúsculas y eliminar signos de puntuación
+            const cleanStr1 = str1.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()¿?¡]/g, '');
+            const cleanStr2 = str2.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()¿?¡]/g, '');
+            
+            // Dividir en palabras
+            const words1 = cleanStr1.split(/\s+/);
+            const words2 = cleanStr2.split(/\s+/);
+            
+            const commonWords = words1.filter(word => words2.includes(word));
+            
+            const maxLength = Math.max(words1.length, words2.length);
+            return (commonWords.length / maxLength) * 100;
+        }
+        
+        function filterSimilarQuestions(newQuestions, threshold) {
+            const uniqueQuestions = [];
+            
+            newQuestions.forEach(newQuestion => {
+                let isUnique = true;
+                
+                for (const existingQuestion of generatedQuestions) {
+                    const similarity = calculateSimilarity(newQuestion, existingQuestion);
+                    if (similarity > threshold) {
+                        isUnique = false;
+                        break;
+                    }
+                }
+                
+                // Comparacion con preguntas nuevas ya aceptadas para no repetir
+                for (const uniqueQuestion of uniqueQuestions) {
+                    const similarity = calculateSimilarity(newQuestion, uniqueQuestion);
+                    if (similarity > threshold) {
+                        isUnique = false;
+                        break;
+                    }
+                }
+                
+                if (isUnique) {
+                    uniqueQuestions.push(newQuestion);
+                }
+            });
+            
+            return uniqueQuestions;
+        }
+
         document.getElementById('generateBtn').addEventListener('click', async function () {
             const paragraph = document.getElementById('paragraph').value.trim();
             const loadingElement = document.getElementById('loading');
             const resultsElement = document.getElementById('results');
             const errorElement = document.getElementById('errorContainer');
             const generateBtn = document.getElementById('generateBtn');
+            const threshold = parseInt(document.getElementById('similarityThreshold').value);
 
             if (!paragraph) {
                 showError('Por favor, ingresa algún texto para generar preguntas');
                 return;
             }
 
+            if (threshold < 0 || threshold > 100 || isNaN(threshold)) {
+                showError('El umbral de similitud debe estar entre 0 y 100');
+                return;
+            }
+
             // Reset UI
             errorElement.style.display = 'none';
             loadingElement.style.display = 'block';
-            resultsElement.style.display = 'none';
             generateBtn.disabled = true;
-            generateBtn.textContent = 'Generando...';
 
             try {
                 const response = await fetch('/generate_questions', {
@@ -225,23 +323,31 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        text: paragraph,
-                        language: 'es'  
-                    })
+                    body: JSON.stringify({ text: paragraph })
                 });
+
+                if (!response.ok) {
+                    throw new Error('Error en el servidor');
+                }
 
                 const data = await response.json();
 
-                if (response.status !== 200) {
-                    throw new Error(data.error || 'Error en el servidor');
-                }
-
                 if (!data.questions || data.questions.length === 0) {
-                    throw new Error('No se generaron preguntas válidas. Intenta con un texto más largo o diferente.');
+                    throw new Error('No se generaron preguntas válidas');
                 }
-
-                displayQuestions(data.questions);
+                
+                // Filtrar preguntas similares
+                const uniqueQuestions = filterSimilarQuestions(data.questions, threshold);
+                
+                if (uniqueQuestions.length === 0) {
+                    showError('No se encontraron preguntas nuevas que superen el umbral de similitud');
+                    return;
+                }
+                
+                // Agregar a las preguntas generadas
+                generatedQuestions.push(...uniqueQuestions);
+                
+                displayQuestions(uniqueQuestions);
 
             } catch (error) {
                 showError(error.message);
@@ -249,35 +355,39 @@
             } finally {
                 loadingElement.style.display = 'none';
                 generateBtn.disabled = false;
-                generateBtn.textContent = 'Generar 10 Preguntas';
             }
         });
 
-        // Función mejorada para mostrar preguntas
+        document.getElementById('copyBtn').addEventListener('click', function() {
+            const questions = Array.from(document.querySelectorAll('.question-item'))
+                                .map(item => item.textContent)
+                                .join('\n');
+            
+            navigator.clipboard.writeText(questions)
+                .then(() => alert('Preguntas copiadas al portapapeles'))
+                .catch(err => console.error('Error al copiar:', err));
+        });
+    
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            generatedQuestions = [];
+            document.getElementById('questionList').innerHTML = '';
+            document.getElementById('results').style.display = 'none';
+        });
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorContainer');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
         function displayQuestions(questions) {
             const resultsElement = document.getElementById('results');
             const questionList = document.getElementById('questionList');
-            questionList.innerHTML = '';
-
-            // Orden aleatorio para mayor variedad visual
-            questions = questions.sort(() => Math.random() - 0.5);
-
-            questions.forEach((question, index) => {
+            
+            questions.forEach((question) => {
                 const listItem = document.createElement('li');
                 listItem.classList.add('question-item');
-
-                // Añadimos número de pregunta
-                const questionNumber = document.createElement('span');
-                questionNumber.textContent = `${index + 1}. `;
-                questionNumber.style.fontWeight = 'bold';
-                questionNumber.style.marginRight = '5px';
-
-                // Añadimos texto de pregunta
-                const questionText = document.createElement('span');
-                questionText.textContent = question;
-
-                listItem.appendChild(questionNumber);
-                listItem.appendChild(questionText);
+                listItem.textContent = question;
                 questionList.appendChild(listItem);
             });
 
